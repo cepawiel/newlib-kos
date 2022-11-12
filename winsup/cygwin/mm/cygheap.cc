@@ -22,6 +22,7 @@
 #include "pinfo.h"
 #include "registry.h"
 #include "ntdll.h"
+#include "memory_layout.h"
 #include <unistd.h>
 #include <wchar.h>
 #include <sys/param.h>
@@ -33,8 +34,6 @@ static mini_cygheap NO_COPY cygheap_dummy =
 
 init_cygheap NO_COPY *cygheap = (init_cygheap *) &cygheap_dummy;
 void NO_COPY *cygheap_max;
-
-extern "C" char  _cygheap_end[];
 
 static NO_COPY muto cygheap_protect;
 
@@ -72,12 +71,31 @@ static void _cfree (void *);
 static void *_csbrk (int);
 }
 
+#define nextpage(x) ((char *) roundup2 ((uintptr_t) (x), \
+					wincap.allocation_granularity ()))
+#define allocsize(x) ((SIZE_T) nextpage (x))
+#ifdef DEBUGGING
+#define somekinda_printf debug_printf
+#else
+#define somekinda_printf malloc_printf
+#endif
+
 /* Called by fork or spawn to reallocate cygwin heap */
 void
 cygheap_fixup_in_child (bool execed)
 {
-  cygheap_max = cygheap = (init_cygheap *) _cygheap_start;
-  _csbrk ((char *) child_proc_info->cygheap_max - (char *) cygheap);
+  SIZE_T commit_size = CYGHEAP_STORAGE_INITIAL - CYGHEAP_STORAGE_LOW;
+
+  if (child_proc_info->cygheap_max > (void *) CYGHEAP_STORAGE_INITIAL)
+    commit_size = allocsize (child_proc_info->cygheap_max);
+  cygheap = (init_cygheap *) VirtualAlloc ((LPVOID) CYGHEAP_STORAGE_LOW,
+					   CYGHEAP_STORAGE_HIGH
+					   - CYGHEAP_STORAGE_LOW,
+					   MEM_RESERVE, PAGE_NOACCESS);
+  cygheap = (init_cygheap *) VirtualAlloc ((LPVOID) CYGHEAP_STORAGE_LOW,
+					   commit_size, MEM_COMMIT,
+					   PAGE_READWRITE);
+  cygheap_max = child_proc_info->cygheap_max;
   child_copy (child_proc_info->parent, false, child_proc_info->silentfail (),
 	      "cygheap", cygheap, cygheap_max, NULL);
   cygheap_init ();
@@ -239,27 +257,34 @@ init_cygheap::init_installation_root ()
     }
 }
 
+/* Initialize bucket_val.  The value is the max size of a block
+   fitting into the bucket.  The values are powers of two and their
+   medians: 24, 32, 48, 64, ...
+   The idea is to have better matching bucket sizes (not wasting
+   space) without trading in performance compared to the old powers
+   of 2 method. */
+static const uint32_t bucket_val[NBUCKETS] = {
+  0, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 1536, 2048,
+  3072, 4096, 6144, 8192, 12288, 16384, 24576, 32768, 49152, 65536, 98304,
+  131072, 196608, 262144, 393216, 524288, 786432, 1048576, 1572864, 2097152,
+  3145728, 4194304, 6291456, 8388608, 12582912
+};
+
 void
 cygheap_init ()
 {
   cygheap_protect.init ("cygheap_protect");
   if (cygheap == &cygheap_dummy)
     {
-      cygheap = (init_cygheap *) memset (_cygheap_start, 0,
-					 sizeof (*cygheap));
-      cygheap_max = cygheap;
-      _csbrk (sizeof (*cygheap));
-      /* Initialize bucket_val.  The value is the max size of a block
-         fitting into the bucket.  The values are powers of two and their
-	 medians: 12, 16, 24, 32, 48, 64, ...  On 64 bit, start with 24 to
-	 accommodate bigger size of struct cygheap_entry.
-	 With NBUCKETS == 40, the maximum block size is 6291456/12582912.
-	 The idea is to have better matching bucket sizes (not wasting
-	 space) without trading in performance compared to the old powers
-	 of 2 method. */
-      unsigned sz[2] = { 16, 24 };	/* sizeof cygheap_entry == 16 */
-      for (unsigned b = 1; b < NBUCKETS; b++, sz[b & 1] <<= 1)
-	cygheap->bucket_val[b] = sz[b & 1];
+      cygheap = (init_cygheap *) VirtualAlloc ((LPVOID) CYGHEAP_STORAGE_LOW,
+					       CYGHEAP_STORAGE_HIGH
+					       - CYGHEAP_STORAGE_LOW,
+					       MEM_RESERVE, PAGE_NOACCESS);
+      cygheap = (init_cygheap *) VirtualAlloc ((LPVOID) CYGHEAP_STORAGE_LOW,
+					       CYGHEAP_STORAGE_INITIAL
+					       - CYGHEAP_STORAGE_LOW,
+					       MEM_COMMIT, PAGE_READWRITE);
+      cygheap_max = (char *) cygheap + sizeof (*cygheap);
       /* Default locale settings. */
       cygheap->locale.mbtowc = __utf8_mbtowc;
       /* Set umask to a sane default. */
@@ -284,30 +309,22 @@ setup_cygheap ()
   cygheap->pg.init ();
 }
 
-#define nextpage(x) ((char *) roundup2 ((uintptr_t) (x), \
-					wincap.allocation_granularity ()))
-#define allocsize(x) ((SIZE_T) nextpage (x))
-#ifdef DEBUGGING
-#define somekinda_printf debug_printf
-#else
-#define somekinda_printf malloc_printf
-#endif
-
 static void *
 _csbrk (int sbs)
 {
   void *prebrk = cygheap_max;
   char *newbase = nextpage (prebrk);
   cygheap_max = (char *) cygheap_max + sbs;
-  if (!sbs || (newbase >= cygheap_max) || (cygheap_max <= _cygheap_end))
+  if (!sbs || newbase >= cygheap_max
+      || cygheap_max <= (void *) CYGHEAP_STORAGE_INITIAL)
     /* nothing to do */;
   else
     {
-      if (prebrk <= _cygheap_end)
-	newbase = _cygheap_end;
+      if (prebrk <= (void *) CYGHEAP_STORAGE_INITIAL)
+	newbase = (char *) CYGHEAP_STORAGE_INITIAL;
 
       SIZE_T adjsbs = allocsize ((char *) cygheap_max - newbase);
-      if (adjsbs && !VirtualAlloc (newbase, adjsbs, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))
+      if (adjsbs && !VirtualAlloc (newbase, adjsbs, MEM_COMMIT, PAGE_READWRITE))
 	{
 	  MEMORY_BASIC_INFORMATION m;
 	  if (!VirtualQuery (newbase, &m, sizeof m))
@@ -337,7 +354,7 @@ _cmalloc (unsigned size)
   unsigned b;
 
   /* Calculate "bit bucket". */
-  for (b = 1; b < NBUCKETS && cygheap->bucket_val[b] < size; b++)
+  for (b = 1; b < NBUCKETS && bucket_val[b] < size; b++)
     continue;
   if (b >= NBUCKETS)
     return NULL;
@@ -351,8 +368,7 @@ _cmalloc (unsigned size)
     }
   else
     {
-      rvc = (_cmalloc_entry *) _csbrk (cygheap->bucket_val[b]
-				       + sizeof (_cmalloc_entry));
+      rvc = (_cmalloc_entry *) _csbrk (bucket_val[b] + sizeof (_cmalloc_entry));
       if (!rvc)
 	{
 	  cygheap_protect.release ();
@@ -386,7 +402,7 @@ _crealloc (void *ptr, unsigned size)
     newptr = _cmalloc (size);
   else
     {
-      unsigned oldsize = cygheap->bucket_val[to_cmalloc (ptr)->b];
+      unsigned oldsize = bucket_val[to_cmalloc (ptr)->b];
       if (size <= oldsize)
 	return ptr;
       newptr = _cmalloc (size);

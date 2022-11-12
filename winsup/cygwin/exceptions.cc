@@ -195,9 +195,9 @@ cygwin_exception::dump_exception ()
 
 #ifdef __x86_64__
   if (exception_name)
-    small_printf ("Exception: %s at rip=%011X\r\n", exception_name, ctx->Rip);
+    small_printf ("Exception: %s at rip=%012X\r\n", exception_name, ctx->Rip);
   else
-    small_printf ("Signal %d at rip=%011X\r\n", e->ExceptionCode, ctx->Rip);
+    small_printf ("Signal %d at rip=%012X\r\n", e->ExceptionCode, ctx->Rip);
   small_printf ("rax=%016X rbx=%016X rcx=%016X\r\n",
 		ctx->Rax, ctx->Rbx, ctx->Rcx);
   small_printf ("rdx=%016X rsi=%016X rdi=%016X\r\n",
@@ -324,6 +324,36 @@ stack_info::walk ()
   return 1;
 }
 
+/*
+  Walk the list of modules in the current process to find the one containing
+   'func_va'.
+
+   This implementation requires no allocation of memory and minimal system
+   calls, so it should be safe in the context of an exception handler.
+*/
+static char *
+prettyprint_va (PVOID func_va)
+{
+  static char buf[256];
+  buf[0] = '\0';
+
+  PLIST_ENTRY head = &NtCurrentTeb()->Peb->Ldr->InMemoryOrderModuleList;
+  for (PLIST_ENTRY x = head->Flink; x != head; x = x->Flink)
+    {
+      PLDR_DATA_TABLE_ENTRY mod = CONTAINING_RECORD (x, LDR_DATA_TABLE_ENTRY,
+						     InMemoryOrderLinks);
+      if ((func_va < mod->DllBase) ||
+	  (func_va > (PVOID)((DWORD_PTR)mod->DllBase + mod->SizeOfImage)))
+	continue;
+
+      __small_sprintf (buf, "%S+0x%x", &mod->BaseDllName,
+		       (DWORD_PTR)func_va - (DWORD_PTR)mod->DllBase);
+      break;
+    }
+
+  return buf;
+}
+
 void
 cygwin_exception::dumpstack ()
 {
@@ -342,19 +372,29 @@ cygwin_exception::dumpstack ()
       int i;
 
       thestack.init (framep, 1, ctx);	/* Initialize from the input CONTEXT */
-      small_printf ("Stack trace:\r\nFrame        Function    Args\r\n");
+      small_printf ("Stack trace:\r\nFrame         Function      Args\r\n");
       for (i = 0; i < DUMPSTACK_FRAME_LIMIT && thestack++; i++)
 	{
-	  small_printf ("%011X  %011X", thestack.sf.AddrFrame.Offset,
+	  small_printf ("%012X  %012X", thestack.sf.AddrFrame.Offset,
 			thestack.sf.AddrPC.Offset);
 	  for (unsigned j = 0; j < NPARAMS; j++)
-	    small_printf ("%s%011X", j == 0 ? " (" : ", ",
+	    small_printf ("%s%012X", j == 0 ? " (" : ", ",
 			  thestack.sf.Params[j]);
-	  small_printf (")\r\n");
+	  small_printf (") %s\r\n", prettyprint_va((PVOID)thestack.sf.AddrPC.Offset));
 	}
-      small_printf ("End of stack trace%s\n",
+      small_printf ("End of stack trace%s\r\n",
 		    i == DUMPSTACK_FRAME_LIMIT ?
-		        " (more stack frames may be present)" : "");
+		    " (more stack frames may be present)" : "");
+
+      small_printf ("Loaded modules:\r\n");
+      PLIST_ENTRY head = &NtCurrentTeb()->Peb->Ldr->InMemoryOrderModuleList;
+      for (PLIST_ENTRY x = head->Flink; x != head; x = x->Flink)
+	{
+	  PLDR_DATA_TABLE_ENTRY mod = CONTAINING_RECORD (x, LDR_DATA_TABLE_ENTRY,
+							 InMemoryOrderLinks);
+	  small_printf ("%012X %S\r\n", mod->DllBase, &mod->BaseDllName);
+	}
+
       if (h)
 	NtClose (h);
     }

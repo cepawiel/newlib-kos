@@ -555,7 +555,6 @@ struct threadlist_t
 struct init_cygheap: public mini_cygheap
 {
   _cmalloc_entry *chain;
-  unsigned bucket_val[NBUCKETS];
   char *buckets[NBUCKETS];
   UNICODE_STRING installation_root;
   WCHAR installation_root_buf[PATH_MAX];
@@ -727,4 +726,3 @@ class cygheap_fdenum : public cygheap_fdmanip
 void cygheap_fixup_in_child (bool);
 void cygheap_init ();
 void setup_cygheap ();
-extern char _cygheap_start[] __attribute__((section(".idata")));

@@ -3,6 +3,13 @@ What's new:
 
 - Drop support for Vista and Server 2008.
 
+- Drop support for 32 bit Windows and WOW64.
+
+- Allow to run with full ASLR enabled and enable on Cygwin DLL by default.
+
+- Remove any special handling for the .com filename suffix. It has to
+  be used always explicitely.
+
 - Add code to handle setrlimit(RLIMIT_AS).
 
 - Add code to handle signal masks in /proc/<PID>/status.
@@ -35,3 +42,6 @@ Bug Fixes
 
 - Don't error out if getfacl(1) is called on a socket file.
   Partially addresses: https://cygwin.com/pipermail/cygwin/2022-July/251768.html
+
+- Make serial ioctl(TIOCMBIS/TIOCMBIC) work on USB CDC devices.
+  Addresses: https://cygwin.com/pipermail/cygwin/2022-November/252443.html

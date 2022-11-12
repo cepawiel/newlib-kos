@@ -1066,6 +1066,8 @@ peb_teb_rinse_repeat:
 		    strcpy (posix_modname, "[cygwin-user-shared]");
 		  else if (cur.abase == (char *) *proc_pinfo)
 		    strcpy (posix_modname, "[procinfo]");
+		  else if (cur.abase == (char *) cygheap)
+		    strcpy (posix_modname, "[cygheap]");
 		  else if (cur.abase == user_heap.base)
 		    strcpy (posix_modname, "[heap]");
 		  else
@@ -1090,9 +1092,11 @@ format_process_stat (void *data, char *&destbuf)
   int nice = 0;
 /* ctty maj is 31:16, min is 15:0; tty_nr s/b maj 15:8, min 31:20, 7:0;
    maj is 31:16 >> 16 & fff << 8; min is 15:0 >> 8 & ff << 20 | & ff */
-  int tty_nr =    (((p->ctty >>  8) & 0xff)  << 20)
-		| (((p->ctty >> 16) & 0xfff) <<  8)
-		|   (p->ctty        & 0xff);
+  int tty_nr = 0;
+  if (p->ctty > 0)
+    tty_nr =   (((p->ctty >>  8) & 0xff)  << 20)
+	     | (((p->ctty >> 16) & 0xfff) <<  8)
+	     |   (p->ctty        & 0xff);
 
   if (p->process_state & PID_EXITED)
     strcpy (cmd, "<defunct>");
