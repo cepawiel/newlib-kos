@@ -19,6 +19,9 @@ endif
 if HAVE_LIBC_SYS_H8500HMS_DIR
 include %D%/h8500hms/Makefile.inc
 endif
+if HAVE_LIBC_SYS_KOS_DIR
+include %D%/kos/Makefile.inc
+endif
 if HAVE_LIBC_SYS_M88KBUG_DIR
 include %D%/m88kbug/Makefile.inc
 endif

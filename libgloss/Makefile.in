@@ -149,8 +149,14 @@ check_PROGRAMS = $(am__EXEEXT_2) $(am__EXEEXT_3)
 
 @CONFIG_RISCV_TRUE@am__append_19 = riscv/libgloss.a \
 @CONFIG_RISCV_TRUE@	riscv/libsemihost.a
-@CONFIG_WINCE_TRUE@am__append_20 = $(gdbdir)
-@CONFIG_WINCE_TRUE@am__append_21 = wince/stub.exe
+@CONFIG_SH_TRUE@am__append_20 = \
+@CONFIG_SH_TRUE@	sh/kos-dreamcast.specs \
+@CONFIG_SH_TRUE@	sh/crt0.o \
+@CONFIG_SH_TRUE@	sh/kos-dreamcast.ld
+
+@CONFIG_SH_TRUE@am__append_21 = sh/libgloss.a
+@CONFIG_WINCE_TRUE@am__append_22 = $(gdbdir)
+@CONFIG_WINCE_TRUE@am__append_23 = wince/stub.exe
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -361,6 +367,12 @@ riscv_libsemihost_a_LIBADD =
 @CONFIG_RISCV_TRUE@	riscv/riscv_libsemihost_a-semihost-sys_unlink.$(OBJEXT) \
 @CONFIG_RISCV_TRUE@	riscv/riscv_libsemihost_a-semihost-sys_write.$(OBJEXT)
 riscv_libsemihost_a_OBJECTS = $(am_riscv_libsemihost_a_OBJECTS)
+sh_libgloss_a_AR = $(AR) $(ARFLAGS)
+sh_libgloss_a_LIBADD =
+@CONFIG_SH_TRUE@am_sh_libgloss_a_OBJECTS =  \
+@CONFIG_SH_TRUE@	sh/sh_libgloss_a-kos-syscalls.$(OBJEXT) \
+@CONFIG_SH_TRUE@	sh/sh_libgloss_a-crt0.$(OBJEXT)
+sh_libgloss_a_OBJECTS = $(am_sh_libgloss_a_OBJECTS)
 @CONFIG_WINCE_TRUE@am__EXEEXT_1 = wince/stub.exe$(EXEEXT)
 @CONFIG_BFIN_TRUE@am__EXEEXT_2 = bfin/sim-test$(EXEEXT)
 @CONFIG_IQ2000_TRUE@am__EXEEXT_3 = iq2000/test$(EXEEXT)
@@ -391,16 +403,16 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
 AM_V_CPPAS = $(am__v_CPPAS_@AM_V@)
 am__v_CPPAS_ = $(am__v_CPPAS_@AM_DEFAULT_V@)
 am__v_CPPAS_0 = @echo "  CPPAS   " $@;
 am__v_CPPAS_1 = 
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_@AM_V@)
@@ -417,7 +429,8 @@ SOURCES = $(bfin_libbfinbsp_a_SOURCES) $(bfin_libsim_a_SOURCES) \
 	$(iq2000_libeval_a_SOURCES) $(libnosys_libnosys_a_SOURCES) \
 	$(libobjs_a_SOURCES) $(lm32_libgloss_a_SOURCES) \
 	$(riscv_libgloss_a_SOURCES) $(riscv_libsemihost_a_SOURCES) \
-	bfin/sim-test.c iq2000/test.c $(wince_stub_exe_SOURCES)
+	$(sh_libgloss_a_SOURCES) bfin/sim-test.c iq2000/test.c \
+	$(wince_stub_exe_SOURCES)
 AM_V_DVIPS = $(am__v_DVIPS_@AM_V@)
 am__v_DVIPS_ = $(am__v_DVIPS_@AM_DEFAULT_V@)
 am__v_DVIPS_0 = @echo "  DVIPS   " $@;
@@ -502,7 +515,7 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
-VPATH = @srcdir@ $(am__append_20)
+VPATH = @srcdir@ $(am__append_22)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -610,7 +623,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -632,9 +644,11 @@ SUBDIRS = @subdirs@ .
 tooldir = $(exec_prefix)/$(target_alias)
 multilibtooldir = $(tooldir)/lib$(MULTISUBDIR)
 multilibtool_DATA = $(am__append_4) $(am__append_6) $(am__append_9) \
-	$(am__append_13) $(am__append_15) $(am__append_18)
+	$(am__append_13) $(am__append_15) $(am__append_18) \
+	$(am__append_20)
 multilibtool_LIBRARIES = $(am__append_2) $(am__append_10) \
-	$(am__append_14) $(am__append_16) $(am__append_19)
+	$(am__append_14) $(am__append_16) $(am__append_19) \
+	$(am__append_21)
 includetooldir = $(tooldir)/include
 includetool_DATA = $(am__append_7)
 includesystooldir = $(tooldir)/include/sys
@@ -791,6 +805,11 @@ TEXINFO_TEX = ../texinfo/texinfo.tex
 @CONFIG_RISCV_TRUE@	riscv/semihost-sys_unlink.c \
 @CONFIG_RISCV_TRUE@	riscv/semihost-sys_write.c
 
+@CONFIG_SH_TRUE@sh_libgloss_a_CPPFLAGS = -I$(srcdir)/sh
+@CONFIG_SH_TRUE@sh_libgloss_a_SOURCES = \
+@CONFIG_SH_TRUE@	sh/kos-syscalls.c \
+@CONFIG_SH_TRUE@	sh/crt0.S
+
 @CONFIG_WINCE_TRUE@gdbdir = ${dir ${patsubst %/,%,${dir @srcdir@}}}gdb
 @CONFIG_WINCE_TRUE@wince_stub_exe_SOURCES = wince-stub.c
 @CONFIG_WINCE_TRUE@wince_stub_exe_CPPFLAGS = $(AM_CPPFLAGS) -I$(gdbdir)
@@ -802,7 +821,7 @@ all: config.h
 .SUFFIXES: .S .c .dvi .o .obj .ps
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/../multilib.am $(srcdir)/doc/Makefile.inc $(srcdir)/bfin/Makefile.inc $(srcdir)/iq2000/Makefile.inc $(srcdir)/libnosys/Makefile.inc $(srcdir)/lm32/Makefile.inc $(srcdir)/riscv/Makefile.inc $(srcdir)/wince/Makefile.inc $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/../multilib.am $(srcdir)/doc/Makefile.inc $(srcdir)/bfin/Makefile.inc $(srcdir)/iq2000/Makefile.inc $(srcdir)/libnosys/Makefile.inc $(srcdir)/lm32/Makefile.inc $(srcdir)/riscv/Makefile.inc $(srcdir)/sh/Makefile.inc $(srcdir)/wince/Makefile.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -824,7 +843,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/../multilib.am $(srcdir)/doc/Makefile.inc $(srcdir)/bfin/Makefile.inc $(srcdir)/iq2000/Makefile.inc $(srcdir)/libnosys/Makefile.inc $(srcdir)/lm32/Makefile.inc $(srcdir)/riscv/Makefile.inc $(srcdir)/wince/Makefile.inc $(am__empty):
+$(top_srcdir)/../multilib.am $(srcdir)/doc/Makefile.inc $(srcdir)/bfin/Makefile.inc $(srcdir)/iq2000/Makefile.inc $(srcdir)/libnosys/Makefile.inc $(srcdir)/lm32/Makefile.inc $(srcdir)/riscv/Makefile.inc $(srcdir)/sh/Makefile.inc $(srcdir)/wince/Makefile.inc $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -1259,6 +1278,21 @@ riscv/libsemihost.a: $(riscv_libsemihost_a_OBJECTS) $(riscv_libsemihost_a_DEPEND
 	$(AM_V_at)-rm -f riscv/libsemihost.a
 	$(AM_V_AR)$(riscv_libsemihost_a_AR) riscv/libsemihost.a $(riscv_libsemihost_a_OBJECTS) $(riscv_libsemihost_a_LIBADD)
 	$(AM_V_at)$(RANLIB) riscv/libsemihost.a
+sh/$(am__dirstamp):
+	@$(MKDIR_P) sh
+	@: > sh/$(am__dirstamp)
+sh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) sh/$(DEPDIR)
+	@: > sh/$(DEPDIR)/$(am__dirstamp)
+sh/sh_libgloss_a-kos-syscalls.$(OBJEXT): sh/$(am__dirstamp) \
+	sh/$(DEPDIR)/$(am__dirstamp)
+sh/sh_libgloss_a-crt0.$(OBJEXT): sh/$(am__dirstamp) \
+	sh/$(DEPDIR)/$(am__dirstamp)
+
+sh/libgloss.a: $(sh_libgloss_a_OBJECTS) $(sh_libgloss_a_DEPENDENCIES) $(EXTRA_sh_libgloss_a_DEPENDENCIES) sh/$(am__dirstamp)
+	$(AM_V_at)-rm -f sh/libgloss.a
+	$(AM_V_AR)$(sh_libgloss_a_AR) sh/libgloss.a $(sh_libgloss_a_OBJECTS) $(sh_libgloss_a_LIBADD)
+	$(AM_V_at)$(RANLIB) sh/libgloss.a
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -1331,6 +1365,7 @@ mostlyclean-compile:
 	-rm -f libnosys/*.$(OBJEXT)
 	-rm -f lm32/*.$(OBJEXT)
 	-rm -f riscv/*.$(OBJEXT)
+	-rm -f sh/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -1450,6 +1485,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@riscv/$(DEPDIR)/riscv_libsemihost_a-sys_kill.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@riscv/$(DEPDIR)/riscv_libsemihost_a-sys_utime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@riscv/$(DEPDIR)/riscv_libsemihost_a-sys_wait.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@sh/$(DEPDIR)/sh_libgloss_a-crt0.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Po@am__quote@
 
 .S.o:
 @am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1466,6 +1503,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(CPPASCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+sh/sh_libgloss_a-crt0.o: sh/crt0.S
+@am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -MT sh/sh_libgloss_a-crt0.o -MD -MP -MF sh/$(DEPDIR)/sh_libgloss_a-crt0.Tpo -c -o sh/sh_libgloss_a-crt0.o `test -f 'sh/crt0.S' || echo '$(srcdir)/'`sh/crt0.S
+@am__fastdepCCAS_TRUE@	$(AM_V_at)$(am__mv) sh/$(DEPDIR)/sh_libgloss_a-crt0.Tpo sh/$(DEPDIR)/sh_libgloss_a-crt0.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='sh/crt0.S' object='sh/sh_libgloss_a-crt0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o sh/sh_libgloss_a-crt0.o `test -f 'sh/crt0.S' || echo '$(srcdir)/'`sh/crt0.S
+
+sh/sh_libgloss_a-crt0.obj: sh/crt0.S
+@am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -MT sh/sh_libgloss_a-crt0.obj -MD -MP -MF sh/$(DEPDIR)/sh_libgloss_a-crt0.Tpo -c -o sh/sh_libgloss_a-crt0.obj `if test -f 'sh/crt0.S'; then $(CYGPATH_W) 'sh/crt0.S'; else $(CYGPATH_W) '$(srcdir)/sh/crt0.S'; fi`
+@am__fastdepCCAS_TRUE@	$(AM_V_at)$(am__mv) sh/$(DEPDIR)/sh_libgloss_a-crt0.Tpo sh/$(DEPDIR)/sh_libgloss_a-crt0.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='sh/crt0.S' object='sh/sh_libgloss_a-crt0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o sh/sh_libgloss_a-crt0.obj `if test -f 'sh/crt0.S'; then $(CYGPATH_W) 'sh/crt0.S'; else $(CYGPATH_W) '$(srcdir)/sh/crt0.S'; fi`
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -2351,6 +2402,20 @@ riscv/riscv_libsemihost_a-semihost-sys_write.obj: riscv/semihost-sys_write.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(riscv_libsemihost_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o riscv/riscv_libsemihost_a-semihost-sys_write.obj `if test -f 'riscv/semihost-sys_write.c'; then $(CYGPATH_W) 'riscv/semihost-sys_write.c'; else $(CYGPATH_W) '$(srcdir)/riscv/semihost-sys_write.c'; fi`
 
+sh/sh_libgloss_a-kos-syscalls.o: sh/kos-syscalls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sh/sh_libgloss_a-kos-syscalls.o -MD -MP -MF sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Tpo -c -o sh/sh_libgloss_a-kos-syscalls.o `test -f 'sh/kos-syscalls.c' || echo '$(srcdir)/'`sh/kos-syscalls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Tpo sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sh/kos-syscalls.c' object='sh/sh_libgloss_a-kos-syscalls.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sh/sh_libgloss_a-kos-syscalls.o `test -f 'sh/kos-syscalls.c' || echo '$(srcdir)/'`sh/kos-syscalls.c
+
+sh/sh_libgloss_a-kos-syscalls.obj: sh/kos-syscalls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sh/sh_libgloss_a-kos-syscalls.obj -MD -MP -MF sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Tpo -c -o sh/sh_libgloss_a-kos-syscalls.obj `if test -f 'sh/kos-syscalls.c'; then $(CYGPATH_W) 'sh/kos-syscalls.c'; else $(CYGPATH_W) '$(srcdir)/sh/kos-syscalls.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Tpo sh/$(DEPDIR)/sh_libgloss_a-kos-syscalls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sh/kos-syscalls.c' object='sh/sh_libgloss_a-kos-syscalls.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sh_libgloss_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sh/sh_libgloss_a-kos-syscalls.obj `if test -f 'sh/kos-syscalls.c'; then $(CYGPATH_W) 'sh/kos-syscalls.c'; else $(CYGPATH_W) '$(srcdir)/sh/kos-syscalls.c'; fi`
+
 wince_stub_exe-wince-stub.o: wince-stub.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wince_stub_exe_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wince_stub_exe-wince-stub.o -MD -MP -MF $(DEPDIR)/wince_stub_exe-wince-stub.Tpo -c -o wince_stub_exe-wince-stub.o `test -f 'wince-stub.c' || echo '$(srcdir)/'`wince-stub.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/wince_stub_exe-wince-stub.Tpo $(DEPDIR)/wince_stub_exe-wince-stub.Po
@@ -2720,6 +2785,8 @@ distclean-generic:
 	-rm -f lm32/$(am__dirstamp)
 	-rm -f riscv/$(DEPDIR)/$(am__dirstamp)
 	-rm -f riscv/$(am__dirstamp)
+	-rm -f sh/$(DEPDIR)/$(am__dirstamp)
+	-rm -f sh/$(am__dirstamp)
 	-rm -f wince/$(am__dirstamp)
 
 maintainer-clean-generic:
@@ -2733,7 +2800,7 @@ clean-am: clean-aminfo clean-binPROGRAMS clean-checkPROGRAMS \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) bfin/$(DEPDIR) iq2000/$(DEPDIR) libnosys/$(DEPDIR) lm32/$(DEPDIR) riscv/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) bfin/$(DEPDIR) iq2000/$(DEPDIR) libnosys/$(DEPDIR) lm32/$(DEPDIR) riscv/$(DEPDIR) sh/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-local distclean-tags
@@ -2874,7 +2941,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) bfin/$(DEPDIR) iq2000/$(DEPDIR) libnosys/$(DEPDIR) lm32/$(DEPDIR) riscv/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) bfin/$(DEPDIR) iq2000/$(DEPDIR) libnosys/$(DEPDIR) lm32/$(DEPDIR) riscv/$(DEPDIR) sh/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-aminfo \
 	maintainer-clean-generic maintainer-clean-local

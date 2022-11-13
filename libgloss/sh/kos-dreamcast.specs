@@ -1,0 +1,5 @@
+%rename link                kos_dc_link
+%rename link_gcc_c_sequence                kos_dc_link_gcc_c_sequence
+
+*link_gcc_c_sequence:
+%(kos_dc_link_gcc_c_sequence) --start-group %G -lkallistios --end-group

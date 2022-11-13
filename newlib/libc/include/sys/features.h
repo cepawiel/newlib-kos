@@ -331,6 +331,13 @@ extern "C" {
 #  define __SSP_FORTIFY_LEVEL 0
 #endif
 
+/* KallistiOS */
+#ifdef __kallistios__
+#define _POSIX_THREADS				1
+#define _POSIX_TIMEOUTS				1
+#define _POSIX_TIMERS			    1
+#endif
+
 /* RTEMS adheres to POSIX -- 1003.1b with some features from annexes.  */
 
 #ifdef __rtems__

@@ -91,6 +91,9 @@ case "${target}" in
   sh*-*-pe | mips*-*-pe | *arm*-wince-pe)
 	config_wince=true
 	;;
+  sh*-*-*)
+	config_sh=true
+	;;
   mips*-*-*)
 	AC_CONFIG_FILES([mips/Makefile])
 	subdirs="$subdirs mips"
@@ -238,7 +241,7 @@ esac
 dnl These subdirs have converted to non-recursive make.  Hopefully someday all
 dnl the ports above will too!
 m4_foreach_w([SUBDIR], [
-  bfin iq2000 libnosys lm32 riscv wince
+  bfin iq2000 libnosys lm32 riscv sh wince
 ], [dnl
   AM_CONDITIONAL([CONFIG_]m4_toupper(SUBDIR), [test x$config_]SUBDIR = xtrue)
 ])

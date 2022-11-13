@@ -14,6 +14,7 @@
 
    User type definitions are guarded by __xyz_t_defined in glibc and
    _XYZ_T_DECLARED in BSD compatible systems.
+   newlib/libc/include/sys/_types.h
 */
 
 #ifndef	_SYS__TYPES_H

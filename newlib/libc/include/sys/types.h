@@ -13,6 +13,7 @@
    however, these aren't "reasonable" values, the sysvi386 ones make far 
    more sense, and should work sufficiently well (in particular, h8300 
    doesn't have a stat, and the necv70 doesn't matter.) -- eichin
+   newlib/libc/include/sys/types.h
  */
 
 #ifndef _SYS_TYPES_H

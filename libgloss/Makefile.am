@@ -74,6 +74,9 @@ endif
 if CONFIG_RISCV
 include riscv/Makefile.inc
 endif
+if CONFIG_SH
+include sh/Makefile.inc
+endif
 if CONFIG_WINCE
 include wince/Makefile.inc
 endif

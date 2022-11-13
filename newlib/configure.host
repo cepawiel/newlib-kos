@@ -536,6 +536,11 @@ case "${host}" in
   powerpcle-*-pe)
 	posix_dir=posix
 	;;
+  sh*-kos-*)
+	sys_dir=kos
+	newlib_cflags="${newlib_cflags} -save-temps -DREENTRANT_SYSCALLS_PROVIDED -DMALLOC_PROVIDED -DABORT_PROVIDED -DHAVE_FCNTL -ffunction-sections -fdata-sections"
+	have_crt0="no"
+	;;
   sh*-*)
 	sys_dir=sh
 	;;
